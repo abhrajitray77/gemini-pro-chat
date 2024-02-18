@@ -37,7 +37,7 @@ const ChatInput = () => {
   return (
     <div className="">
       <form
-        className="mt-2 bg-gray-800 text-gray-400 rounded-lg text-sm p-5 space-x-5 flex"
+        className="mt-2 bg-neutral-200 text-gray-800 rounded-xl text-sm p-5 space-x-5 flex"
         onSubmit={sendMessage}
       >
         <input
@@ -50,9 +50,9 @@ const ChatInput = () => {
         <button
           type="submit"
           disabled={!prompt}
-          className="flex bg-[#11A37F] hover:opacity-50 text-white font-bold px-4 py-2 rounded disabled:bg-gray-300 disabled:cursor-not-allowed"
+          className="flex bg-[#428eff] hover:bg-[#275497] group text-white font-bold px-4 py-2 rounded disabled:bg-gray-300 disabled:cursor-not-allowed"
         >
-          <RiSendPlaneFill className="h-5 w-5 -rotate-45" />
+          <RiSendPlaneFill className="h-5 w-5 group-hover:rotate-45 transition duration-300" />
         </button>
       </form>
     </div>
