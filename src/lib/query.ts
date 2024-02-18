@@ -14,8 +14,8 @@ const imageQuery = async (prompt: string, model: string, imageParts: any) => {
     const modelOb = genAI.getGenerativeModel({model: model});
     //fetching the response
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
-    const res = await modelOb.generateContent(prompt, ...imageParts);
+    // @ts-ignore
+    const res = await modelOb.generateContent([prompt, ...imageParts]);
   return res.response.text();
 }
 

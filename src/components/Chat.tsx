@@ -29,9 +29,7 @@ const Chat = () => {
           <li
             key={index}
             className={`${
-              message.type === "prompt"
-                ? "bg-neutral-200"
-                : "bg-[#428eff73]"
+              message.type === "prompt" ? "bg-neutral-200" : "bg-[#428eff73]"
             } rounded-xl text-sm p-5 text-gray-800 space-x-5 flex`}
           >
             {message.type === "prompt" ? (
@@ -43,6 +41,18 @@ const Chat = () => {
               <div>
                 <span>Gemini:</span>
                 <p>{message.content}</p>
+              </div>
+            )}
+
+            {message?.image && (
+              <div className="p-2 bg-neutral-200">
+                <img
+                  src={message?.image}
+                  alt="promt image"
+                  width={160}
+                  height={160}
+                  className="max-w-[10rem] max-h-[10rem] rounded-xl object-cover"
+                />
               </div>
             )}
           </li>

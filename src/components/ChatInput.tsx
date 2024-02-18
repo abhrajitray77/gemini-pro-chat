@@ -21,16 +21,16 @@ const ChatInput = () => {
   };
 
   const handleClick = () => {
-    const fileInputEl = document.querySelector("input[type=file]") as HTMLInputElement;
+    const fileInputEl = document.querySelector(
+      "input[type=file]"
+    ) as HTMLInputElement;
     if (fileInputEl) {
       fileInputEl.click();
     }
   };
 
-  console.log(file);
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const fileToGenerativeParts = async (file: any) => {
+  const fileToGenerativePart = async (file: any) => {
     const base64EncodedDataPromise = new Promise((resolve) => {
       const reader = new FileReader();
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -49,12 +49,14 @@ const ChatInput = () => {
 
     //for vision model
 
-    const fileInputEl = document.querySelector("input[type=file]");
+    const fileInputEl = document.querySelector("input[type=file]") as HTMLInputElement;
     const imageParts = await Promise.all(
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      [...fileInputEl.files].map(fileToGenerativeParts)
+      [...fileInputEl.files].map(fileToGenerativePart)
     );
+
+    console.log(fileInputEl?.files?.item(0));
 
     setLoading(true);
     const input = prompt.trim();
@@ -67,22 +69,40 @@ const ChatInput = () => {
         : await imageQuery(input, model, imageParts);
 
     // Add the prompt to the chat
-    setChat((prevChat) => [...prevChat, { type: "prompt", content: input }]);
+    model === "gemini-pro"
+      ? setChat((prevChat) => [...prevChat, { type: "prompt", content: input }])
+      : setChat((prevChat) => [
+          ...prevChat,
+          { type: "prompt", content: input, image: file },
+        ]);
 
     setLoading(false);
 
     // Check if the response is an error message
     if (result?.startsWith("Error:")) {
       // Display the error message
-      setChat((prevChat) => [
-        ...prevChat,
-        { type: "response", content: `An error occured, ${result}` },
-      ]);
+      model === "gemini-pro"
+        ? setChat((prevChat) => [
+            ...prevChat,
+            { type: "response", content: `An error occurred, ${result}` },
+          ])
+        : setChat((prevChat) => [
+            ...prevChat,
+            { type: "response", content: `An error occurred, ${result}` , image: file },
+          ]);
       return;
     }
 
     // Add the response to the chat
-    setChat((prevChat) => [...prevChat, { type: "response", content: result }]);
+    model === "gemini-pro"
+      ? setChat((prevChat) => [
+          ...prevChat,
+          { type: "response", content: result },
+        ])
+      : setChat((prevChat) => [
+          ...prevChat,
+          { type: "response", content: result, image: file },
+        ]);
   };
 
   return (
@@ -99,12 +119,6 @@ const ChatInput = () => {
           onChange={(e) => setPrompt(e.target.value)}
           placeholder="Type your message here..."
         />
-        {/*         <input
-          type="file"
-          accept="image/*"
-          onChange={handleChange}
-          className=""
-        /> */}
 
         <input
           type="file"
