@@ -1,29 +1,29 @@
 import React, { createContext, useState } from "react";
 
-export type chatContextType = {
-  prompts: string[];
-  setPrompts: (value: string[]) => void;
-  responses: string[];
-  setResponses: (value: string[]) => void;
+export type ChatMessageType = {
+  type: string;
+  content: string;
 };
 
-export const ChatContext = createContext<chatContextType>({
-  prompts: [],
-  setPrompts: () => {},
-  responses: [],
-  setResponses: () => {},
+export type ChatContextType = {
+  chat: ChatMessageType[];
+  setChat: React.Dispatch<React.SetStateAction<ChatMessageType[]>>;
+};
+
+export const ChatContext = createContext<ChatContextType>({
+  chat: [],
+  setChat: () => {},
 });
 
-type chatProviderProps = {
+type ChatProviderProps = {
   children: React.ReactNode;
 };
 
-export const ChatProvider: React.FC<chatProviderProps> = ({ children }) => {
-  const [prompts, setPrompts] = useState<string[]>([]);
-  const [responses, setResponses] = useState<string[]>([]);
+export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
+  const [chat, setChat] = useState<ChatMessageType[]>([]);
 
   return (
-    <ChatContext.Provider value={{ prompts, setPrompts, responses, setResponses }}>
+    <ChatContext.Provider value={{ chat, setChat }}>
       {children}
     </ChatContext.Provider>
   );

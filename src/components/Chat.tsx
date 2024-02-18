@@ -1,23 +1,20 @@
-import { useContext, useEffect} from "react";
+import { useContext, useEffect } from "react";
 import { TbTrash } from "react-icons/tb";
 import { ChatContext } from "../utils/ChatProvider";
 
 const Chat = () => {
-  const { prompts, setPrompts, responses, setResponses } =
-    useContext(ChatContext);
+    const { chat, setChat } = useContext(ChatContext);
 
-  //refresh the chat component when context state changes
-  useEffect(() => {
-    
-  }, [prompts, responses]); 
-
-//delete the chat from local storage
+  //delete the chat from local storage
   const clearChat = () => {
     localStorage.removeItem("prompt");
     localStorage.removeItem("response");
-    setPrompts([]);
-    setResponses([]);
+    setChat([]);
   };
+
+  useEffect(() => {
+    // Your logic to handle context state changes and updates
+  }, [chat]);
 
   return (
     <div className="flex flex-col">
@@ -29,31 +26,33 @@ const Chat = () => {
       </div>
 
       <div className="max-h-[25rem] overflow-y-scroll">
-        {/* retrieve chats from local storage */}
-        {prompts.length === 0 ? (
-          <div className="text-center text-2xl text-gray-400">
-            Type Something!
+        {/* Display chat messages */}
+        {chat.map((message, index) => (
+          <div
+            key={index}
+            className={`${
+              message.type === "prompt"
+                ? "bg-neutral-200 text-gray-800"
+                : "bg-[#428eff73] text-white"
+            } rounded-xl text-sm p-5 space-x-5 flex`}
+          >
+            {
+                message.type === "prompt" ? (
+                    <div>
+                        <span>You:</span>
+                        <p>{message.content}</p>
+
+                    </div>
+
+                ) : (
+                    <div>
+                        <span>Gemini:</span>
+                        <p>{message.content}</p>
+                    </div>
+                )
+            }
           </div>
-        ) : (
-          prompts?.map((prompt, index) => (
-            <div key={index} className="bg-gray-100 p-3 my-3 rounded-xl">
-              <div className="text-gray-500 font-bold">You:</div>
-              <div>{prompt}</div>
-            </div>
-          ))
-        )}
-        {prompts && responses && prompts.length === responses.length ? (
-          responses?.map((response, index) => (
-            <div key={index} className="bg-gray-100 p-3 my-3 rounded-xl">
-              <div className="text-gray-500 font-bold">Gemini:</div>
-              <div>{response}</div>
-            </div>
-          ))
-        ) : (
-          <div className="text-center text-2xl text-gray-400">
-            Waiting for a response...
-          </div>
-        )}
+        ))}
       </div>
     </div>
   );

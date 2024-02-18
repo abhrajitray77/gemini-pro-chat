@@ -6,7 +6,7 @@ import { ChatContext } from "../utils/ChatProvider";
 
 const ChatInput = () => {
   const [prompt, setPrompt] = useState<string>("");
-  const { setPrompts, setResponses, prompts, responses } = useContext(ChatContext);
+  const { chat, setChat } = useContext(ChatContext);
 
   const sendMessage = async (e: FormEvent) => {
     e.preventDefault();
@@ -14,14 +14,12 @@ const ChatInput = () => {
 
     const input = prompt.trim();
 
-    // Update prompts using the setter function
-    setPrompts([...prompts, input]);
+    // Add the prompt to the chat
+    setChat([...chat, { type: "prompt", content: input }]);
 
     // Call the query function with the prompt and model
     const res = await query(input, "gemini-pro");
 
-    // Update responses using the setter function
-    setResponses([...responses, res]);
 
     // Clear the prompt
     setPrompt("");
@@ -29,9 +27,12 @@ const ChatInput = () => {
     // Check if the response is an error message
     if (res?.startsWith("Error:")) {
       // Display the error message
-      setResponses([...responses, `An error occurred. Please try again. ${res}`]);
+      setChat([...chat, { type: "response", content: `An error occured, ${res}` }])
       return;
     }
+
+    // Add the response to the chat
+    setChat([...chat, { type: "response", content: res }]);
   };
 
   return (
