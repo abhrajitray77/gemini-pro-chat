@@ -1,4 +1,4 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect} from "react";
 import { TbTrash } from "react-icons/tb";
 import { ChatContext } from "../utils/ChatProvider";
 
@@ -6,9 +6,12 @@ const Chat = () => {
   const { prompts, setPrompts, responses, setResponses } =
     useContext(ChatContext);
 
-  //update the chat when context state changes
-  useEffect(() => {}, [prompts, responses]);
+  //refresh the chat component when context state changes
+  useEffect(() => {
+    
+  }, [prompts, responses]); 
 
+//delete the chat from local storage
   const clearChat = () => {
     localStorage.removeItem("prompt");
     localStorage.removeItem("response");

@@ -5,31 +5,33 @@ import query from "../lib/query"; // import the query function
 import { ChatContext } from "../utils/ChatProvider";
 
 const ChatInput = () => {
-  const [prompt, setPrompt] = useState("");
-  
-  const { prompts, responses} = useContext(ChatContext);
+  const [prompt, setPrompt] = useState<string>("");
+  const { setPrompts, setResponses, prompts, responses } = useContext(ChatContext);
 
   const sendMessage = async (e: FormEvent) => {
     e.preventDefault();
     if (!prompt) return;
 
     const input = prompt.trim();
-    prompts.push(input);
 
-    // call the query function with the prompt and model
+    // Update prompts using the setter function
+    setPrompts([...prompts, input]);
+
+    // Call the query function with the prompt and model
     const res = await query(input, "gemini-pro");
 
-    // set the response state and clear the prompt
-    setPrompt("");
-    responses.push(res);
+    // Update responses using the setter function
+    setResponses([...responses, res]);
 
-    // check if the response is an error message
+    // Clear the prompt
+    setPrompt("");
+
+    // Check if the response is an error message
     if (res?.startsWith("Error:")) {
-      // display the error message
-      responses.push(`An error occurred. Please try again. ${res}`);
+      // Display the error message
+      setResponses([...responses, `An error occurred. Please try again. ${res}`]);
       return;
     }
-
   };
 
   return (
@@ -37,7 +39,6 @@ const ChatInput = () => {
       <form
         className="mt-2 bg-neutral-200 text-gray-800 rounded-xl text-sm p-5 space-x-5 flex"
         onSubmit={sendMessage}
-        //send the prompt on enter
         onKeyDown={(e) => e.key === "Enter" && sendMessage(e)}
       >
         <input
