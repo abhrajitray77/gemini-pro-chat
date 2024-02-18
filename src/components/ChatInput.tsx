@@ -1,44 +1,88 @@
 import { FormEvent, useContext, useState } from "react";
 import { RiSendPlaneFill } from "react-icons/ri";
-import { FaRegHourglassHalf } from "react-icons/fa6";
-
-
-import query from "../lib/query"; // import the query function
+import { FaCameraRetro, FaRegHourglassHalf } from "react-icons/fa6";
 import { ChatContext } from "../utils/ChatProvider";
+import { ModelContext } from "../utils/ModelProvider";
+import { imageQuery, textQuery } from "../lib/query";
 
 const ChatInput = () => {
   const [prompt, setPrompt] = useState<string>("");
+  const [file, setFile] = useState<string>();
   const [loading, setLoading] = useState<boolean>(false);
+  const { model } = useContext(ModelContext);
   const { setChat } = useContext(ChatContext);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files && e.target.files[0];
+    if (selectedFile) {
+      const fileUrl = URL.createObjectURL(selectedFile);
+      setFile(fileUrl);
+    }
+  };
+
+  const handleClick = () => {
+    const fileInputEl = document.querySelector("input[type=file]") as HTMLInputElement;
+    if (fileInputEl) {
+      fileInputEl.click();
+    }
+  };
+
+  console.log(file);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const fileToGenerativeParts = async (file: any) => {
+    const base64EncodedDataPromise = new Promise((resolve) => {
+      const reader = new FileReader();
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      reader.onloadend = () => resolve(reader.result.split(",")[1]);
+      reader.readAsDataURL(file);
+    });
+    return {
+      inlineData: { data: await base64EncodedDataPromise, mimeType: file.type },
+    };
+  };
 
   const sendMessage = async (e: FormEvent) => {
     e.preventDefault();
     if (!prompt) return;
+
+    //for vision model
+
+    const fileInputEl = document.querySelector("input[type=file]");
+    const imageParts = await Promise.all(
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      [...fileInputEl.files].map(fileToGenerativeParts)
+    );
 
     setLoading(true);
     const input = prompt.trim();
     // Clear the prompt
     setPrompt("");
 
+    const result =
+      model === "gemini-pro"
+        ? await textQuery(input, model)
+        : await imageQuery(input, model, imageParts);
+
     // Add the prompt to the chat
     setChat((prevChat) => [...prevChat, { type: "prompt", content: input }]);
 
-    // Call the query function with the prompt and model
-    const res = await query(input, "gemini-pro");
     setLoading(false);
 
     // Check if the response is an error message
-    if (res?.startsWith("Error:")) {
+    if (result?.startsWith("Error:")) {
       // Display the error message
       setChat((prevChat) => [
         ...prevChat,
-        { type: "response", content: `An error occured, ${res}` },
+        { type: "response", content: `An error occured, ${result}` },
       ]);
       return;
     }
 
     // Add the response to the chat
-    setChat((prevChat) => [...prevChat, { type: "response", content: res }]);
+    setChat((prevChat) => [...prevChat, { type: "response", content: result }]);
   };
 
   return (
@@ -55,6 +99,27 @@ const ChatInput = () => {
           onChange={(e) => setPrompt(e.target.value)}
           placeholder="Type your message here..."
         />
+        {/*         <input
+          type="file"
+          accept="image/*"
+          onChange={handleChange}
+          className=""
+        /> */}
+
+        <input
+          type="file"
+          accept="image/*"
+          style={{ display: "none" }}
+          onChange={handleChange}
+        />
+        <button
+          onClick={handleClick}
+          type="button"
+          className="flex bg-[#96c0ff] hover:bg-[#75acff] text-white font-bold px-4 py-2 rounded disabled:bg-gray-300 disabled:cursor-not-allowed"
+        >
+          <FaCameraRetro className="h-5 w-5" />
+        </button>
+
         <button
           type="submit"
           disabled={!prompt}
@@ -65,7 +130,6 @@ const ChatInput = () => {
           ) : (
             <RiSendPlaneFill className="h-5 w-5 group-hover:rotate-45 transition duration-300" />
           )}
-          
         </button>
       </form>
     </div>
