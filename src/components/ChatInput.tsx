@@ -1,37 +1,35 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useContext, useState } from "react";
 import { RiSendPlaneFill } from "react-icons/ri";
 
 import query from "../lib/query"; // import the query function
+import { ChatContext } from "../utils/ChatProvider";
 
 const ChatInput = () => {
   const [prompt, setPrompt] = useState("");
-  const [response, setResponse] = useState(""); // response state
+  
+  const { prompts, responses} = useContext(ChatContext);
 
   const sendMessage = async (e: FormEvent) => {
     e.preventDefault();
     if (!prompt) return;
 
     const input = prompt.trim();
-
-    //story the prompt in local storage
-    localStorage.setItem("prompt", input);
+    prompts.push(input);
 
     // call the query function with the prompt and model
     const res = await query(input, "gemini-pro");
 
     // set the response state and clear the prompt
     setPrompt("");
-    setResponse(res);
+    responses.push(res);
 
     // check if the response is an error message
     if (res?.startsWith("Error:")) {
       // display the error message
-      setResponse(`An error occurred. Please try again. ${res}`);
+      responses.push(`An error occurred. Please try again. ${res}`);
       return;
     }
 
-    //store the response in local storage
-    localStorage.setItem("response", response);
   };
 
   return (
@@ -39,6 +37,8 @@ const ChatInput = () => {
       <form
         className="mt-2 bg-neutral-200 text-gray-800 rounded-xl text-sm p-5 space-x-5 flex"
         onSubmit={sendMessage}
+        //send the prompt on enter
+        onKeyDown={(e) => e.key === "Enter" && sendMessage(e)}
       >
         <input
           type="text"
