@@ -1,8 +1,9 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 
 export type ChatMessageType = {
   type: string;
   content: string;
+  image?: string;
 };
 
 export type ChatContextType = {
@@ -22,6 +23,19 @@ type ChatProviderProps = {
 export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
   const [chat, setChat] = useState<ChatMessageType[]>([]);
 
+  useEffect(() => {
+    // Retrieve chat from local storage if already there else set it to an empty array
+    const storedChat = JSON.parse(localStorage.getItem("chat") || "[]");
+    if (storedChat.length > 0) {
+      setChat(storedChat);
+    }
+  }, []);
+
+  // Update local storage whenever chat changes
+  useEffect(() => {
+    localStorage.setItem("chat", JSON.stringify(chat));
+  }, [chat]);
+  
   return (
     <ChatContext.Provider value={{ chat, setChat }}>
       {children}

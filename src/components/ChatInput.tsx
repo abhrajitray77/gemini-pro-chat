@@ -1,38 +1,44 @@
 import { FormEvent, useContext, useState } from "react";
 import { RiSendPlaneFill } from "react-icons/ri";
+import { FaRegHourglassHalf } from "react-icons/fa6";
+
 
 import query from "../lib/query"; // import the query function
 import { ChatContext } from "../utils/ChatProvider";
 
 const ChatInput = () => {
   const [prompt, setPrompt] = useState<string>("");
-  const { chat, setChat } = useContext(ChatContext);
+  const [loading, setLoading] = useState<boolean>(false);
+  const { setChat } = useContext(ChatContext);
 
   const sendMessage = async (e: FormEvent) => {
     e.preventDefault();
     if (!prompt) return;
 
+    setLoading(true);
     const input = prompt.trim();
+    // Clear the prompt
+    setPrompt("");
 
     // Add the prompt to the chat
-    setChat([...chat, { type: "prompt", content: input }]);
+    setChat((prevChat) => [...prevChat, { type: "prompt", content: input }]);
 
     // Call the query function with the prompt and model
     const res = await query(input, "gemini-pro");
-
-
-    // Clear the prompt
-    setPrompt("");
+    setLoading(false);
 
     // Check if the response is an error message
     if (res?.startsWith("Error:")) {
       // Display the error message
-      setChat([...chat, { type: "response", content: `An error occured, ${res}` }])
+      setChat((prevChat) => [
+        ...prevChat,
+        { type: "response", content: `An error occured, ${res}` },
+      ]);
       return;
     }
 
     // Add the response to the chat
-    setChat([...chat, { type: "response", content: res }]);
+    setChat((prevChat) => [...prevChat, { type: "response", content: res }]);
   };
 
   return (
@@ -54,7 +60,12 @@ const ChatInput = () => {
           disabled={!prompt}
           className="flex bg-[#428eff] hover:bg-[#275497] group text-white font-bold px-4 py-2 rounded disabled:bg-gray-300 disabled:cursor-not-allowed"
         >
-          <RiSendPlaneFill className="h-5 w-5 group-hover:rotate-45 transition duration-300" />
+          {loading ? (
+            <FaRegHourglassHalf className="h-5 w-5 animate-spin" />
+          ) : (
+            <RiSendPlaneFill className="h-5 w-5 group-hover:rotate-45 transition duration-300" />
+          )}
+          
         </button>
       </form>
     </div>
